@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Books - Book Haven</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="container">
+    <div>📦 Free delivery on orders above Rs. 2000 | 📞 0300-1234567</div>
+    <div style="display:flex;gap:16px;"><a href="admin/index.html">🔐 Admin</a></div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Book<span>Haven</span></div>
+    </a>
+    <form class="search-bar" id="searchForm">
+      <input type="text" id="searchInput" placeholder="Search books, authors...">
+      <button type="submit">🔍</button>
+    </form>
+    <div class="nav-actions">
+      <a href="cart.html" class="nav-link cart-icon">
+        <span>🛒</span><span>Cart</span>
+        <span class="cart-count" id="cartCount" style="display:none">0</span>
+      </a>
+    </div>
+  </div>
+  <div style="background:#f8f9fa;border-top:1px solid #eee;">
+    <div class="container">
+      <nav class="nav-menu">
+        <a href="index.html">🏠 Home</a>
+        <a href="products.html" class="active">📖 All Books</a>
+        <a href="products.html?cat=Fiction">🎭 Fiction</a>
+        <a href="products.html?cat=Religion">🕌 Religion</a>
+        <a href="products.html?cat=Science">🔬 Science</a>
+        <a href="products.html?cat=Business">💼 Business</a>
+        <a href="products.html?featured=true">⭐ Bestsellers</a>
+      </nav>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="container">
+    <h1 id="pageTitle">📖 All Books</h1>
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="sep">›</span>
+      <span id="breadcrumbCurrent">All Books</span>
+    </div>
+  </div>
+</div>
+
+<!-- Books Page Content -->
+<div style="padding:0 0 60px;">
+  <div class="container">
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>📂 Category:</label>
+        <select id="categoryFilter">
+          <option value="all">All Categories</option>
+          <option value="Fiction">Fiction</option>
+          <option value="Non-Fiction">Non-Fiction</option>
+          <option value="Religion">Religion</option>
+          <option value="Science">Science</option>
+          <option value="History">History</option>
+          <option value="Business">Business</option>
+          <option value="Technology">Technology</option>
+          <option value="Children">Children</option>
+          <option value="Poetry">Poetry</option>
+          <option value="Biography">Biography</option>
+          <option value="Self-Help">Self-Help</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>⬆️ Sort by:</label>
+        <select id="sortSelect">
+          <option value="newest">Newest First</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>
+          <input type="checkbox" id="featuredOnly" style="margin-right:6px;">
+          ⭐ Featured Only
+        </label>
+      </div>
+      <span class="results-count" id="resultsCount">Loading...</span>
+    </div>
+
+    <!-- Books Grid -->
+    <div class="books-grid" id="booksGrid">
+      <div class="loading-spinner" style="grid-column:1/-1;"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-icon">📚</div>
+          <div class="logo-text" style="color:white;">Book<span>Haven</span></div>
+        </div>
+        <p>Pakistan's trusted online bookstore.</p>
+      </div>
+      <div class="footer-col"><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="cart.html">Cart</a></li></ul></div>
+      <div class="footer-col"><h4>Categories</h4><ul><li><a href="products.html?cat=Fiction">Fiction</a></li><li><a href="products.html?cat=Religion">Religion</a></li></ul></div>
+      <div class="footer-col"><h4>Contact</h4><ul><li><a href="tel:03001234567">📞 0300-1234567</a></li><li><a href="mailto:info@bookhaven.pk">📧 info@bookhaven.pk</a></li></ul></div>
+    </div>
+  </div>
+  <div style="background:rgba(0,0,0,0.2);">
+    <div class="container"><div class="footer-bottom"><span>© 2024 BookHaven. All rights reserved.</span></div></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Read URL params
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get('cat');
+  const search = params.get('search');
+  const featured = params.get('featured');
+
+  // Set filters from URL
+  if (cat) {
+    document.getElementById('categoryFilter').value = cat;
+    document.getElementById('pageTitle').textContent = '📖 ' + cat + ' Books';
+    document.getElementById('breadcrumbCurrent').textContent = cat;
+  }
+  if (search) {
+    document.getElementById('searchInput').value = search;
+    document.getElementById('pageTitle').textContent = '🔍 Results for "' + search + '"';
+  }
+  if (featured) {
+    document.getElementById('pageTitle').textContent = '⭐ Bestsellers';
+    document.getElementById('breadcrumbCurrent').textContent = 'Bestsellers';
+  }
+
+  const getFilters = () => ({
+    category: document.getElementById('categoryFilter').value === 'all' ? '' : document.getElementById('categoryFilter').value,
+    sort: document.getElementById('sortSelect').value,
+    search: document.getElementById('searchInput').value.trim(),
+    featured: document.getElementById('featuredOnly').checked ? true : (featured ? true : false)
+  });
+
+  loadProducts(getFilters());
+
+  document.getElementById('featuredOnly').addEventListener('change', () => loadProducts(getFilters()));
+
+  // Override search form for in-page search
+  document.getElementById('searchForm').addEventListener('submit', e => {
+    e.preventDefault();
+    loadProducts(getFilters());
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Placed Successfully! - Book Haven</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body style="background:#f8f9fa;">
+
+<!-- Minimal Navbar -->
+<nav class="navbar">
+  <div class="container" style="justify-content:center;">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Book<span>Haven</span></div>
+    </a>
+  </div>
+</nav>
+
+<div class="success-page">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <h2>Order Placed Successfully!</h2>
+    <p>Thank you for shopping with Book Haven! Your order has been received and is being processed.</p>
+
+    <div class="order-id-box">
+      <div style="font-size:0.82rem;color:#6c757d;margin-bottom:6px;">Your Order ID</div>
+      <strong id="orderIdDisplay">#LOADING...</strong>
+    </div>
+
+    <div id="orderDetails" style="text-align:left;margin:20px 0;background:#f8f9fa;border-radius:10px;padding:16px;">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:12px;color:#2d2d2d;">Order Details</div>
+      <div id="orderDetailsContent" style="font-size:0.87rem;color:#6c757d;display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <div style="background:#f0fdf4;border-radius:10px;padding:16px;margin-bottom:24px;text-align:left;font-size:0.87rem;color:#155724;">
+      <div style="font-weight:700;margin-bottom:8px;">📦 What happens next?</div>
+      <ol style="padding-left:16px;display:flex;flex-direction:column;gap:6px;">
+        <li>We'll confirm your order within <strong>2 hours</strong></li>
+        <li>Our team will pack your books carefully</li>
+        <li>Your order will be shipped within <strong>1-2 days</strong></li>
+        <li>Expected delivery: <strong>2-5 business days</strong></li>
+      </ol>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <a href="products.html" class="btn btn-primary">📖 Continue Shopping</a>
+      <a href="index.html" class="btn btn-outline">🏠 Back to Home</a>
+    </div>
+
+    <div style="margin-top:20px;font-size:0.82rem;color:#6c757d;">
+      Questions? Call us at <strong>0300-1234567</strong>
+    </div>
+  </div>
+</div>
+
+<script>
+  const orderId = localStorage.getItem('lastOrderId');
+  const orderData = JSON.parse(localStorage.getItem('lastOrderData') || '{}');
+
+  if (!orderId) {
+    document.querySelector('.success-icon').textContent = '📦';
+    document.querySelector('h2').textContent = 'Track Your Order';
+    document.querySelector('p').textContent = 'Your order details have been saved.';
+  }
+
+  const orderIdEl = document.getElementById('orderIdDisplay');
+  if (orderIdEl && orderId) {
+    orderIdEl.textContent = '#' + orderId.substring(0, 8).toUpperCase();
+  }
+
+  const detailsEl = document.getElementById('orderDetailsContent');
+  if (detailsEl && orderData.customer_name) {
+    detailsEl.innerHTML = `
+      <div>👤 <strong>Name:</strong> ${orderData.customer_name}</div>
+      <div>📞 <strong>Phone:</strong> ${orderData.customer_phone}</div>
+      ${orderData.customer_email ? `<div>📧 <strong>Email:</strong> ${orderData.customer_email}</div>` : ''}
+      <div>📍 <strong>Address:</strong> ${orderData.customer_address}, ${orderData.customer_city}</div>
+      <div>💳 <strong>Payment:</strong> ${
+        orderData.payment_method === 'cod' ? 'Cash on Delivery' :
+        orderData.payment_method === 'bank_transfer' ? 'Bank Transfer' : 'EasyPaisa/JazzCash'
+      }</div>
+      <div>💰 <strong>Total:</strong> Rs. ${Number(orderData.total_amount).toLocaleString()}</div>
+    `;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Books - Book Haven Admin</title>
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+
+<div class="admin-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">📚</div>
+      <div><div class="sidebar-logo-text">BookHaven</div><div class="sidebar-logo-sub">Admin Panel</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Main</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-item-icon">📊</span> Dashboard</a>
+        <a href="products.html" class="nav-item active"><span class="nav-item-icon">📚</span> Books / Products</a>
+        <a href="orders.html" class="nav-item"><span class="nav-item-icon">🛒</span> Orders<span class="nav-item-badge" id="pendingBadge">0</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Shortcuts</div>
+        <a href="../index.html" class="nav-item" target="_blank"><span class="nav-item-icon">🌐</span> View Store</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-profile" onclick="logout()">
+        <div class="admin-avatar">A</div>
+        <div class="admin-info"><div class="admin-name" id="adminEmail">Admin</div><div class="admin-role">Sign out →</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <header class="admin-header">
+      <div class="header-title">📚 Manage Books</div>
+      <div class="header-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search books..." id="searchInput" oninput="filterTable()">
+      </div>
+      <div class="header-actions">
+        <a href="../index.html" target="_blank" class="btn btn-light btn-sm">🌐 Store</a>
+        <button class="btn btn-primary" onclick="openAddModal()">➕ Add New Book</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Filters Row -->
+      <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+        <select id="categoryFilter" class="form-control" style="width:auto;" onchange="filterTable()">
+          <option value="">All Categories</option>
+          <option>Fiction</option><option>Non-Fiction</option><option>Religion</option>
+          <option>Science</option><option>History</option><option>Business</option>
+          <option>Technology</option><option>Children</option><option>Poetry</option>
+          <option>Biography</option><option>Self-Help</option>
+        </select>
+        <select id="stockFilter" class="form-control" style="width:auto;" onchange="filterTable()">
+          <option value="">All Stock Status</option>
+          <option value="in_stock">In Stock</option>
+          <option value="low_stock">Low Stock (≤5)</option>
+          <option value="out_stock">Out of Stock</option>
+        </select>
+        <span id="bookCount" style="font-size:0.87rem;color:#6c757d;margin-left:auto;"></span>
+      </div>
+
+      <!-- Books Table -->
+      <div class="card">
+        <div class="table-wrapper">
+          <table id="booksTable">
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="booksTableBody">
+              <tr><td colspan="7" style="text-align:center;padding:40px;color:#6c757d;">Loading books...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Book Modal -->
+<div class="modal-overlay" id="bookModal" style="display:none;">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <h3 id="modalTitle">➕ Add New Book</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="bookForm">
+        <input type="hidden" id="bookId">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Book Title *</label>
+            <input type="text" id="bookTitle" class="form-control" placeholder="Enter book title" required>
+          </div>
+          <div class="form-group">
+            <label>Author Name *</label>
+            <input type="text" id="bookAuthor" class="form-control" placeholder="Author name" required>
+          </div>
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="bookCategory" class="form-control" required>
+              <option value="">Select Category</option>
+              <option>Fiction</option><option>Non-Fiction</option><option>Religion</option>
+              <option>Science</option><option>History</option><option>Business</option>
+              <option>Technology</option><option>Children</option><option>Poetry</option>
+              <option>Biography</option><option>Self-Help</option><option>General</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Price (Rs.) *</label>
+            <input type="number" id="bookPrice" class="form-control" placeholder="e.g. 500" min="0" step="1" required>
+          </div>
+          <div class="form-group">
+            <label>Stock Quantity *</label>
+            <input type="number" id="bookStock" class="form-control" placeholder="e.g. 50" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>ISBN (optional)</label>
+            <input type="text" id="bookISBN" class="form-control" placeholder="978-3-16-148410-0">
+          </div>
+          <div class="form-group">
+            <label>Publisher (optional)</label>
+            <input type="text" id="bookPublisher" class="form-control" placeholder="Publisher name">
+          </div>
+          <div class="form-group">
+            <label>Pages (optional)</label>
+            <input type="number" id="bookPages" class="form-control" placeholder="e.g. 320" min="1">
+          </div>
+          <div class="form-group full">
+            <label>Cover Image URL (optional)</label>
+            <input type="url" id="bookImage" class="form-control" placeholder="https://example.com/book-cover.jpg" oninput="previewImage()">
+            <div class="form-hint">Paste a direct link to book cover image, or leave empty for auto-generated cover.</div>
+            <div id="imagePreviewContainer" style="margin-top:10px;display:none;">
+              <img id="imagePreview" style="max-height:150px;border-radius:8px;object-fit:cover;" onerror="document.getElementById('imagePreviewContainer').style.display='none'">
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="bookDescription" class="form-control" rows="3" placeholder="Brief description of the book..."></textarea>
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+              <input type="checkbox" id="bookFeatured" style="width:18px;height:18px;accent-color:#e94560;">
+              ⭐ Mark as Featured/Bestseller
+            </label>
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+              <input type="checkbox" id="bookActive" checked style="width:18px;height:18px;accent-color:#e94560;">
+              ✅ Active (visible in store)
+            </label>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()" id="saveBtn">💾 Save Book</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal" style="display:none;">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>🗑️ Delete Book</h3>
+      <button class="modal-close" onclick="document.getElementById('deleteModal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:30px;">
+      <div style="font-size:3rem;margin-bottom:16px;">⚠️</div>
+      <p>Are you sure you want to delete <strong id="deleteBookTitle"></strong>?</p>
+      <p style="font-size:0.85rem;color:#6c757d;margin-top:8px;">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="document.getElementById('deleteModal').style.display='none'">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">🗑️ Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../js/supabase-config.js"></script>
+<script>
+let allBooks = [];
+
+// Auth guard
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return window.location.href = 'index.html';
+  document.getElementById('adminEmail').textContent = session.user.email;
+})();
+
+async function logout() { await supabase.auth.signOut(); window.location.href = 'index.html'; }
+
+// Toast
+function showToast(msg, type='success') {
+  const container = document.getElementById('toastContainer');
+  const icons = { success:'✅', error:'❌', info:'ℹ️' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]||'📢'}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateX(100px)'; setTimeout(()=>toast.remove(),300); }, 3000);
+}
+
+// Load all books
+async function loadBooks() {
+  const tbody = document.getElementById('booksTableBody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#6c757d;">Loading...</td></tr>';
+  try {
+    const { data, error } = await supabase.from(TABLES.BOOKS).select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    allBooks = data || [];
+    renderTable(allBooks);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#dc3545;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function renderTable(books) {
+  const tbody = document.getElementById('booksTableBody');
+  document.getElementById('bookCount').textContent = books.length + ' books';
+
+  if (!books.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;">
+      <div style="font-size:3rem;margin-bottom:12px;">📚</div>
+      <div style="color:#6c757d;">No books found. <a href="#" onclick="openAddModal()" style="color:#e94560;">Add your first book →</a></div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = books.map(book => {
+    const stockClass = book.stock === 0 ? 'status-cancelled' : book.stock <= 5 ? 'status-pending' : 'status-delivered';
+    const stockText = book.stock === 0 ? 'Out of Stock' : book.stock <= 5 ? `Low (${book.stock})` : book.stock;
+    return `
+    <tr>
+      <td>
+        <div class="book-thumb-wrap">
+          <div class="book-thumb" style="background:${getCoverBg(book.category)};">
+            ${book.cover_image
+              ? `<img src="${book.cover_image}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">`
+              : '📚'
+            }
+          </div>
+          <div class="book-thumb-info">
+            <div class="book-name">${escHtml(book.title)}</div>
+            <div class="book-author">${escHtml(book.author||'Unknown')}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="status-badge status-confirmed" style="font-size:0.72rem;">${book.category||'General'}</span></td>
+      <td style="font-weight:700;">Rs. ${Number(book.price).toLocaleString()}</td>
+      <td><span class="status-badge ${stockClass}">${stockText}</span></td>
+      <td>
+        <label class="toggle-switch" style="cursor:pointer;" title="${book.is_active ? 'Click to deactivate' : 'Click to activate'}">
+          <input type="checkbox" ${book.is_active ? 'checked' : ''} onchange="toggleActive('${book.id}', this.checked)" style="width:16px;height:16px;accent-color:#e94560;cursor:pointer;">
+          <span style="font-size:0.82rem;color:${book.is_active ? '#28a745' : '#6c757d'};">${book.is_active ? 'Active' : 'Hidden'}</span>
+        </label>
+      </td>
+      <td style="text-align:center;">
+        <span style="font-size:1.2rem;cursor:pointer;" onclick="toggleFeatured('${book.id}', ${!book.is_featured})" title="${book.is_featured ? 'Remove from featured' : 'Mark as featured'}">
+          ${book.is_featured ? '⭐' : '☆'}
+        </span>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-light btn-sm" onclick="editBook('${book.id}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('${book.id}','${escHtml(book.title)}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const cat = document.getElementById('categoryFilter').value;
+  const stock = document.getElementById('stockFilter').value;
+
+  const filtered = allBooks.filter(b => {
+    const matchSearch = !search || b.title.toLowerCase().includes(search) || (b.author||'').toLowerCase().includes(search);
+    const matchCat = !cat || b.category === cat;
+    const matchStock = !stock ||
+      (stock === 'in_stock' && b.stock > 5) ||
+      (stock === 'low_stock' && b.stock > 0 && b.stock <= 5) ||
+      (stock === 'out_stock' && b.stock === 0);
+    return matchSearch && matchCat && matchStock;
+  });
+  renderTable(filtered);
+}
+
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = '➕ Add New Book';
+  document.getElementById('bookForm').reset();
+  document.getElementById('bookId').value = '';
+  document.getElementById('bookActive').checked = true;
+  document.getElementById('imagePreviewContainer').style.display = 'none';
+  document.getElementById('bookModal').style.display = 'flex';
+}
+
+function editBook(id) {
+  const book = allBooks.find(b => b.id === id);
+  if (!book) return;
+  document.getElementById('modalTitle').textContent = '✏️ Edit Book';
+  document.getElementById('bookId').value = book.id;
+  document.getElementById('bookTitle').value = book.title || '';
+  document.getElementById('bookAuthor').value = book.author || '';
+  document.getElementById('bookCategory').value = book.category || '';
+  document.getElementById('bookPrice').value = book.price || '';
+  document.getElementById('bookStock').value = book.stock || 0;
+  document.getElementById('bookISBN').value = book.isbn || '';
+  document.getElementById('bookPublisher').value = book.publisher || '';
+  document.getElementById('bookPages').value = book.pages || '';
+  document.getElementById('bookImage').value = book.cover_image || '';
+  document.getElementById('bookDescription').value = book.description || '';
+  document.getElementById('bookFeatured').checked = book.is_featured || false;
+  document.getElementById('bookActive').checked = book.is_active !== false;
+  previewImage();
+  document.getElementById('bookModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('bookModal').style.display = 'none'; }
+
+function previewImage() {
+  const url = document.getElementById('bookImage').value.trim();
+  const container = document.getElementById('imagePreviewContainer');
+  const img = document.getElementById('imagePreview');
+  if (url) { img.src = url; container.style.display = 'block'; }
+  else { container.style.display = 'none'; }
+}
+
+async function saveBook() {
+  const title = document.getElementById('bookTitle').value.trim();
+  const author = document.getElementById('bookAuthor').value.trim();
+  const category = document.getElementById('bookCategory').value;
+  const price = parseFloat(document.getElementById('bookPrice').value);
+  const stock = parseInt(document.getElementById('bookStock').value);
+
+  if (!title || !author || !category || isNaN(price) || isNaN(stock)) {
+    showToast('Please fill all required fields!', 'error'); return;
+  }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  const bookData = {
+    title, author, category, price, stock,
+    isbn: document.getElementById('bookISBN').value.trim() || null,
+    publisher: document.getElementById('bookPublisher').value.trim() || null,
+    pages: parseInt(document.getElementById('bookPages').value) || null,
+    cover_image: document.getElementById('bookImage').value.trim() || null,
+    description: document.getElementById('bookDescription').value.trim() || null,
+    is_featured: document.getElementById('bookFeatured').checked,
+    is_active: document.getElementById('bookActive').checked
+  };
+
+  try {
+    const id = document.getElementById('bookId').value;
+    let error;
+    if (id) {
+      ({ error } = await supabase.from(TABLES.BOOKS).update(bookData).eq('id', id));
+    } else {
+      ({ error } = await supabase.from(TABLES.BOOKS).insert([bookData]));
+    }
+    if (error) throw error;
+    showToast(id ? 'Book updated successfully! ✅' : 'Book added successfully! ✅');
+    closeModal();
+    loadBooks();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Save Book';
+  }
+}
+
+async function toggleActive(id, active) {
+  const { error } = await supabase.from(TABLES.BOOKS).update({ is_active: active }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  const book = allBooks.find(b=>b.id===id);
+  if (book) book.is_active = active;
+  showToast(active ? 'Book activated' : 'Book hidden', 'info');
+}
+
+async function toggleFeatured(id, featured) {
+  const { error } = await supabase.from(TABLES.BOOKS).update({ is_featured: featured }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  const book = allBooks.find(b=>b.id===id);
+  if (book) book.is_featured = featured;
+  showToast(featured ? '⭐ Added to featured!' : 'Removed from featured', 'info');
+  renderTable(allBooks);
+}
+
+function confirmDelete(id, title) {
+  document.getElementById('deleteBookTitle').textContent = title;
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('confirmDeleteBtn').onclick = () => deleteBook(id);
+}
+
+async function deleteBook(id) {
+  try {
+    const { error } = await supabase.from(TABLES.BOOKS).delete().eq('id', id);
+    if (error) throw error;
+    document.getElementById('deleteModal').style.display = 'none';
+    showToast('Book deleted successfully', 'info');
+    loadBooks();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+// Helpers
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+const gradients = {
+  'Fiction':'#667eea','Non-Fiction':'#f093fb','Science':'#4facfe','History':'#43e97b',
+  'Religion':'#fa709a','Technology':'#a18cd1','Business':'#ffecd2','Children':'#a1c4fd',
+  'Poetry':'#fccb90','Default':'#667eea'
+};
+function getCoverBg(cat) { return gradients[cat] || gradients.Default; }
+
+// Open add modal if URL has #add
+if (window.location.hash === '#add') { window.addEventListener('DOMContentLoaded', openAddModal); }
+
+// Load pending count for badge
+(async () => {
+  const { count } = await supabase.from(TABLES.ORDERS).select('id', {count:'exact'}).eq('status','pending');
+  document.getElementById('pendingBadge').textContent = count || 0;
+})();
+
+loadBooks();
+</script>
+</body>
+</html>
